@@ -1,0 +1,35 @@
+# Agent Team
+
+## Primary Agent
+
+- **Name:** {{agentName}}
+- **Role:** {{agentRole}}
+- **Capabilities:**{{#if hasMemory}} Memory,{{/if}}{{#if hasTriologue}} Triologue,{{/if}}{{#if hasSkills}} Skills{{/if}}
+- **Status:** In Development
+
+## Collaborating Agents
+
+- Ice (@ice) — Code review, architecture guidance
+- Lava (@lava) — Implementation support, testing
+
+## Workflow
+
+1. **Development:** Implement features according to TASKS.md
+2. **Review:** Submit PRs for review by Ice/Lava
+3. **Testing:** Run test suite before deployment
+4. **Deployment:** Follow deployment guide in ARCHITECTURE.md
+
+## Communication
+
+{{#if hasTriologue}}
+- Primary: Triologue (room: {{triologueRoom}})
+{{/if}}
+- Backup: GitHub Issues/PRs
+- Emergency: Direct mention in Triologue
+
+## Standards
+
+- **Code Style:** TypeScript with strict mode
+- **Testing:** Unit tests required for core logic
+- **Documentation:** JSDoc for public APIs
+- **Commits:** Conventional commits format

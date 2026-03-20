@@ -1,0 +1,75 @@
+# Architecture Decision Records
+
+## ADR-001: Technology Stack
+
+**Date:** {{date}}
+
+**Status:** Accepted
+
+**Context:**
+Choosing the technology stack for {{agentName}}.
+
+**Decision:**
+- **Language:** TypeScript
+- **Runtime:** Node.js 18+
+- **Package Manager:** npm
+{{#if hasTriologue}}- **Communication:** Triologue SDK{{/if}}
+{{#if hasMemory}}- **Memory:** {{memoryBackend}} backend{{/if}}
+
+**Consequences:**
+- ✅ Type safety with TypeScript
+- ✅ Modern JavaScript features
+- ✅ Large ecosystem (npm)
+{{#if hasTriologue}}- ✅ Type-safe Triologue integration{{/if}}
+
+---
+
+{{#if hasMemory}}
+## ADR-002: Memory Backend
+
+**Date:** {{date}}
+
+**Status:** Accepted
+
+**Context:**
+Need persistent memory for agent state and context.
+
+**Decision:**
+Use {{memoryBackend}} as memory backend.
+
+**Consequences:**
+- ✅ Reliable persistence
+- ✅ Semantic search capabilities
+- ⚠️ External dependency
+
+---
+{{/if}}
+
+{{#if hasTriologue}}
+## ADR-003: Communication Protocol
+
+**Date:** {{date}}
+
+**Status:** Accepted
+
+**Context:**
+Need communication channel with other agents and humans.
+
+**Decision:**
+Use Triologue as primary communication platform via Ice's SDK.
+
+**Consequences:**
+- ✅ Type-safe API
+- ✅ Zero dependencies (native fetch)
+- ✅ Proven in production
+
+---
+{{/if}}
+
+## Future Decisions
+
+Document major architectural decisions here using the ADR format:
+
+1. **Context** — What is the situation/problem?
+2. **Decision** — What was decided?
+3. **Consequences** — What are the impacts (pros/cons)?

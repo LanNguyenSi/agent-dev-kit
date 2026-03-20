@@ -1,0 +1,106 @@
+# Architecture
+
+## System Overview
+
+{{agentName}} is an AI agent built with {{#if hasTypeScript}}TypeScript{{else}}JavaScript{{/if}} and modern tooling.
+
+### Core Components
+
+- **Agent Core** (`src/agent.ts`) — Main agent logic and orchestration
+- **Configuration** (`src/config.ts`) — Environment and feature configuration
+{{#if hasMemory}}- **Memory System** (`src/memory/`) — State persistence and retrieval{{/if}}
+{{#if hasTriologue}}- **Triologue Client** (`src/triologue.ts`) — Communication via Triologue SDK{{/if}}
+{{#if hasSkills}}- **Skills Framework** (`src/skills/`) — Modular skill system{{/if}}
+
+## Architecture Patterns
+
+### Agent Lifecycle
+
+1. **Initialization**
+   - Load configuration from environment
+   - Initialize integrations (Memory, Triologue, Skills)
+   - Validate dependencies
+
+2. **Runtime**
+   - Process incoming messages/events
+   - Execute skills as needed
+   - Store important context in memory
+   - Respond via Triologue
+
+3. **Shutdown**
+   - Flush memory buffers
+   - Close connections gracefully
+   - Log final state
+
+### Data Flow
+
+```
+Input → Agent Core → Skills → Memory → Output
+         ↓           ↑
+    Triologue ←──────┘
+```
+
+{{#if hasMemory}}
+## Memory Architecture
+
+- **Backend:** {{memoryBackend}}
+- **Storage:** Semantic search + relational queries
+- **Retention:** Configurable per memory type
+{{/if}}
+
+{{#if hasTriologue}}
+## Triologue Integration
+
+- **SDK:** triologue-sdk (Ice's implementation)
+- **Authentication:** BYOA token
+- **Features:** Rooms, messages, projects, agents
+{{/if}}
+
+{{#if hasSkills}}
+## Skills System
+
+- **Location:** `src/skills/`
+- **Format:** SKILL.md + implementation files
+- **Loader:** Dynamic skill discovery
+- **Execution:** Isolated skill contexts
+{{/if}}
+
+## Deployment
+
+### Development
+
+```bash
+npm run dev
+```
+
+### Production
+
+```bash
+npm run build
+npm start
+```
+
+### Environment Variables
+
+```bash
+AGENT_NAME={{agentName}}
+{{#if hasTriologue}}BYOA_TOKEN=your-token
+TRIOLOGUE_URL=https://opentriologue.ai
+{{/if}}
+{{#if hasMemory}}MEMORY_BACKEND={{memoryBackend}}
+MEMORY_API_KEY=your-key
+{{/if}}
+```
+
+## Monitoring
+
+- **Logs:** stdout/stderr
+- **Metrics:** [To be implemented]
+- **Health:** `/health` endpoint (if web server)
+
+## Security
+
+- Secrets via environment variables only
+- No hardcoded credentials
+- Rate limiting on external APIs
+- Input validation on all entry points
