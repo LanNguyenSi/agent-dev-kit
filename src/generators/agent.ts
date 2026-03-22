@@ -422,16 +422,17 @@ ${this.config.metadata?.license || "MIT"}
         ]
           .filter((line) => line !== "")
           .join("\n")
-      : "";
+      : [
+          "  name;",
+          this.config.features.memory ? "  memory = createMemoryStore();" : "",
+          this.config.features.skills ? "  skills = loadSkills();" : "",
+          this.config.features.triologue ? "  triologue;" : "",
+        ]
+          .filter((line) => line !== "")
+          .join("\n");
 
     const constructorLines = [
       `    this.name = process.env.AGENT_NAME || '${this.config.name}';`,
-      !isTypeScript && this.config.features.memory
-        ? "    this.memory = createMemoryStore();"
-        : "",
-      !isTypeScript && this.config.features.skills
-        ? "    this.skills = loadSkills();"
-        : "",
       this.config.features.triologue
         ? `    if (process.env.BYOA_TOKEN) {
       this.triologue = new Triologue({
