@@ -1,16 +1,25 @@
 # Agent Dev Kit
 
+**Status:** WIP
+
 **CLI scaffolding tool for AI agent development**
 
-Agent Dev Kit simplifies creating production-ready AI agents with best practices, common integrations, and proper project structure.
+Agent Dev Kit simplifies creating AI agent projects with common integrations and a usable starting structure.
+
+Current state:
+- basic scaffolding and `.ai/` context generation are implemented
+- repository-level tests and CI are in place
+- several documented scaffold features are still incomplete
+
+Open follow-up work is tracked in [tasks/README.md](./tasks/README.md).
 
 ## Features
 
 - 🤖 **Quick Scaffolding** - Create agent projects in seconds
 - 📁 **`.ai/` Context** - Automatic agent context files (from ScaffoldKit pattern)
-- 🔌 **Built-in Integrations** - Triologue, Memory systems, Skills framework
+- 🔌 **Built-in Integrations** - Triologue scaffold is partial, Memory and Skills scaffolds are still WIP
 - 📦 **TypeScript First** - Full type safety with modern tooling
-- 🎯 **Best Practices** - Pre-configured testing, linting, and CI/CD
+- 🎯 **Best Practices** - Repo CI exists, generated-project defaults are still being tightened
 
 ## Quick Start
 
@@ -318,6 +327,21 @@ const result = await skills.execute('my-skill', { param: 'value' });
 
 ## Development
 
+```bash
+npm install
+npm run format:check
+npm run build
+npm test
+```
+
+## CI
+
+GitHub Actions runs on pushes and pull requests and checks:
+- `npm run format:check`
+- `npm run build`
+- `npm test`
+- a CLI smoke test for `agent-dev create ... --no-git --no-install`
+
 ### Project Structure
 
 ```
@@ -353,8 +377,8 @@ agent-dev-kit/
 - [x] Memory integration
 - [x] Skills framework
 - [ ] OpenClaw integration
-- [ ] Testing framework setup
-- [ ] CI/CD templates
+- [x] Testing framework setup
+- [x] CI/CD templates
 - [ ] Docker support
 - [ ] Deployment helpers
 

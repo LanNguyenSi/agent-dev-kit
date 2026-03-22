@@ -1,7 +1,11 @@
-import path from 'path';
-import Handlebars from 'handlebars';
-import type { AgentConfig, TemplateContext, GeneratorOptions } from '../types.js';
-import { FileUtils } from '../utils/files.js';
+import path from "path";
+import Handlebars from "handlebars";
+import type {
+  AgentConfig,
+  TemplateContext,
+  GeneratorOptions,
+} from "../types.js";
+import { FileUtils } from "../utils/files.js";
 
 export class AgentGenerator {
   private config: AgentConfig;
@@ -20,13 +24,13 @@ export class AgentGenerator {
   private getTemplateContext(): TemplateContext {
     return {
       agentName: this.config.name,
-      agentRole: this.config.description || 'AI Agent',
+      agentRole: this.config.description || "AI Agent",
       hasMemory: this.config.features.memory,
       hasTriologue: this.config.features.triologue,
       hasSkills: this.config.features.skills,
       hasTypeScript: this.config.options.typescript,
-      memoryBackend: 'local',
-      date: new Date().toISOString().split('T')[0]
+      memoryBackend: "local",
+      date: new Date().toISOString().split("T")[0],
     };
   }
 
@@ -43,19 +47,26 @@ export class AgentGenerator {
    * Generate .ai/ context files
    */
   private async generateAiContext(): Promise<void> {
-    this.log('Generating .ai/ context files...');
-    
+    this.log("Generating .ai/ context files...");
+
     const context = this.getTemplateContext();
-    const aiDir = path.join(this.targetDir, '.ai');
+    const aiDir = path.join(this.targetDir, ".ai");
     await FileUtils.ensureDir(aiDir);
 
-    const contextFiles = ['AGENTS.md', 'ARCHITECTURE.md', 'TASKS.md', 'DECISIONS.md'];
+    const contextFiles = [
+      "AGENTS.md",
+      "ARCHITECTURE.md",
+      "TASKS.md",
+      "DECISIONS.md",
+    ];
 
     for (const file of contextFiles) {
-      const templateContent = await FileUtils.readTemplate(`ai-context/${file}.hbs`);
+      const templateContent = await FileUtils.readTemplate(
+        `ai-context/${file}.hbs`,
+      );
       const template = Handlebars.compile(templateContent);
       const content = template(context);
-      
+
       await FileUtils.writeFile(path.join(aiDir, file), content);
       this.log(`  ✓ ${file}`);
     }
@@ -65,42 +76,42 @@ export class AgentGenerator {
    * Generate package.json
    */
   private async generatePackageJson(): Promise<void> {
-    this.log('Generating package.json...');
+    this.log("Generating package.json...");
 
     const packageJson = {
       name: this.config.name,
-      version: '1.0.0',
-      description: this.config.description || 'AI Agent',
-      main: this.config.options.typescript ? 'dist/index.js' : 'src/index.js',
-      type: 'module',
+      version: "1.0.0",
+      description: this.config.description || "AI Agent",
+      main: this.config.options.typescript ? "dist/index.js" : "src/index.js",
+      type: "module",
       scripts: this.config.options.typescript
         ? {
-            build: 'tsc',
-            dev: 'tsc --watch',
-            start: 'node dist/index.js',
-            test: 'echo \"Error: no test specified\" && exit 1'
+            build: "tsc",
+            dev: "tsc --watch",
+            start: "node dist/index.js",
+            test: 'echo \"Error: no test specified\" && exit 1',
           }
         : {
-            start: 'node src/index.js',
-            test: 'echo \"Error: no test specified\" && exit 1'
+            start: "node src/index.js",
+            test: 'echo \"Error: no test specified\" && exit 1',
           },
-      keywords: ['ai', 'agent'],
-      author: this.config.metadata?.author || '',
-      license: this.config.metadata?.license || 'MIT',
+      keywords: ["ai", "agent"],
+      author: this.config.metadata?.author || "",
+      license: this.config.metadata?.license || "MIT",
       dependencies: this.getDependencies(),
       devDependencies: this.config.options.typescript
         ? {
-            '@types/node': '^20.11.0',
-            typescript: '^5.3.3'
+            "@types/node": "^20.11.0",
+            typescript: "^5.3.3",
           }
-        : {}
+        : {},
     };
 
     await FileUtils.writeFile(
-      path.join(this.targetDir, 'package.json'),
-      JSON.stringify(packageJson, null, 2)
+      path.join(this.targetDir, "package.json"),
+      JSON.stringify(packageJson, null, 2),
     );
-    this.log('  ✓ package.json');
+    this.log("  ✓ package.json");
   }
 
   /**
@@ -108,11 +119,11 @@ export class AgentGenerator {
    */
   private getDependencies(): Record<string, string> {
     const deps: Record<string, string> = {
-      dotenv: '^16.4.0'
+      dotenv: "^16.4.0",
     };
 
     if (this.config.features.triologue) {
-      deps['triologue-sdk'] = '^0.1.0';
+      deps["triologue-sdk"] = "^0.1.0";
     }
 
     return deps;
@@ -124,54 +135,54 @@ export class AgentGenerator {
   private async generateTsConfig(): Promise<void> {
     if (!this.config.options.typescript) return;
 
-    this.log('Generating tsconfig.json...');
+    this.log("Generating tsconfig.json...");
 
     const tsConfig = {
       compilerOptions: {
-        target: 'ES2022',
-        module: 'ES2022',
-        moduleResolution: 'node',
-        outDir: './dist',
-        rootDir: './src',
+        target: "ES2022",
+        module: "ES2022",
+        moduleResolution: "node",
+        outDir: "./dist",
+        rootDir: "./src",
         strict: true,
         esModuleInterop: true,
         skipLibCheck: true,
         forceConsistentCasingInFileNames: true,
-        resolveJsonModule: true
+        resolveJsonModule: true,
       },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist']
+      include: ["src/**/*"],
+      exclude: ["node_modules", "dist"],
     };
 
     await FileUtils.writeFile(
-      path.join(this.targetDir, 'tsconfig.json'),
-      JSON.stringify(tsConfig, null, 2)
+      path.join(this.targetDir, "tsconfig.json"),
+      JSON.stringify(tsConfig, null, 2),
     );
-    this.log('  ✓ tsconfig.json');
+    this.log("  ✓ tsconfig.json");
   }
 
   /**
    * Generate .gitignore
    */
   private async generateGitignore(): Promise<void> {
-    this.log('Generating .gitignore...');
+    this.log("Generating .gitignore...");
 
     const content = `node_modules/
-${this.config.options.typescript ? 'dist/\n' : ''}*.log
+${this.config.options.typescript ? "dist/\n" : ""}*.log
 .env
 .env.local
 .DS_Store
 `;
 
-    await FileUtils.writeFile(path.join(this.targetDir, '.gitignore'), content);
-    this.log('  ✓ .gitignore');
+    await FileUtils.writeFile(path.join(this.targetDir, ".gitignore"), content);
+    this.log("  ✓ .gitignore");
   }
 
   /**
    * Generate .env.example
    */
   private async generateEnvExample(): Promise<void> {
-    this.log('Generating .env.example...');
+    this.log("Generating .env.example...");
 
     let content = `# Agent Configuration
 AGENT_NAME=${this.config.name}
@@ -192,23 +203,26 @@ MEMORY_API_KEY=your-key-here
 `;
     }
 
-    await FileUtils.writeFile(path.join(this.targetDir, '.env.example'), content);
-    this.log('  ✓ .env.example');
+    await FileUtils.writeFile(
+      path.join(this.targetDir, ".env.example"),
+      content,
+    );
+    this.log("  ✓ .env.example");
   }
 
   /**
    * Generate README
    */
   private async generateReadme(): Promise<void> {
-    this.log('Generating README.md...');
+    this.log("Generating README.md...");
 
     const content = `# ${this.config.name}
 
-${this.config.description || 'AI Agent'}
+${this.config.description || "AI Agent"}
 
 ## Features
 
-${this.config.features.memory ? '- 🧠 Memory System\n' : ''}${this.config.features.triologue ? '- 📡 Triologue Integration\n' : ''}${this.config.features.skills ? '- 🎯 Skills Framework\n' : ''}
+${this.config.features.memory ? "- 🧠 Memory System\n" : ""}${this.config.features.triologue ? "- 📡 Triologue Integration\n" : ""}${this.config.features.skills ? "- 🎯 Skills Framework\n" : ""}
 ## Setup
 
 1. Install dependencies:
@@ -222,54 +236,62 @@ cp .env.example .env
 # Edit .env with your configuration
 \`\`\`
 
-3. ${this.config.options.typescript ? 'Build and run' : 'Run'}:
+3. ${this.config.options.typescript ? "Build and run" : "Run"}:
 \`\`\`bash
-${this.config.options.typescript ? 'npm run build\n' : ''}npm start
+${this.config.options.typescript ? "npm run build\n" : ""}npm start
 \`\`\`
 
 ## Development
 
-${this.config.options.typescript ? `\`\`\`bash
+${
+  this.config.options.typescript
+    ? `\`\`\`bash
 npm run dev  # Watch mode
 \`\`\`
-` : ''}
+`
+    : ""
+}
 ## Documentation
 
 See [\`.ai/ARCHITECTURE.md\`](.ai/ARCHITECTURE.md) for system overview.
 
 ## License
 
-${this.config.metadata?.license || 'MIT'}
+${this.config.metadata?.license || "MIT"}
 `;
 
-    await FileUtils.writeFile(path.join(this.targetDir, 'README.md'), content);
-    this.log('  ✓ README.md');
+    await FileUtils.writeFile(path.join(this.targetDir, "README.md"), content);
+    this.log("  ✓ README.md");
   }
 
   /**
    * Generate main agent file
    */
   private async generateMainFile(): Promise<void> {
-    this.log('Generating main agent file...');
+    this.log("Generating main agent file...");
 
-    const ext = this.config.options.typescript ? 'ts' : 'js';
-    const srcDir = path.join(this.targetDir, 'src');
+    const ext = this.config.options.typescript ? "ts" : "js";
+    const srcDir = path.join(this.targetDir, "src");
     await FileUtils.ensureDir(srcDir);
 
-    const content = `${this.config.options.typescript ? "import { config } from 'dotenv';\n" : "import dotenv from 'dotenv';\n"}${this.config.features.triologue ? "import { Triologue } from 'triologue-sdk';\n" : ''}
-${this.config.options.typescript ? 'config();\n' : 'dotenv.config();\n'}
+    const content = `${this.config.options.typescript ? "import { config } from 'dotenv';\n" : "import dotenv from 'dotenv';\n"}${this.config.features.triologue ? "import { Triologue } from 'triologue-sdk';\n" : ""}
+${this.config.options.typescript ? "config();\n" : "dotenv.config();\n"}
 export class Agent {
-  private name: string;${this.config.features.triologue ? '\n  private triologue?: Triologue;' : ''}
+  private name: string;${this.config.features.triologue ? "\n  private triologue?: Triologue;" : ""}
 
   constructor() {
     this.name = process.env.AGENT_NAME || '${this.config.name}';
-    ${this.config.features.triologue ? `
+    ${
+      this.config.features.triologue
+        ? `
     if (process.env.BYOA_TOKEN) {
       this.triologue = new Triologue({
         baseUrl: process.env.TRIOLOGUE_URL || 'https://opentriologue.ai',
         token: process.env.BYOA_TOKEN,
       });
-    }` : ''}
+    }`
+        : ""
+    }
   }
 
   async run() {

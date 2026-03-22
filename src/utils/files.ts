@@ -1,7 +1,7 @@
-import fs from 'fs-extra';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import fs from "fs-extra";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -11,7 +11,7 @@ export class FileUtils {
    * Get templates directory path
    */
   static getTemplatesDir(): string {
-    return path.join(__dirname, '../../templates');
+    return path.join(__dirname, "../../templates");
   }
 
   /**
@@ -20,12 +20,12 @@ export class FileUtils {
   static async copyFile(
     source: string,
     dest: string,
-    transform?: (content: string) => string
+    transform?: (content: string) => string,
   ): Promise<void> {
     await fs.ensureDir(path.dirname(dest));
-    
+
     if (transform) {
-      const content = await fs.readFile(source, 'utf-8');
+      const content = await fs.readFile(source, "utf-8");
       const transformed = transform(content);
       await fs.writeFile(dest, transformed);
     } else {
@@ -54,7 +54,7 @@ export class FileUtils {
    */
   static async readTemplate(templatePath: string): Promise<string> {
     const fullPath = path.join(this.getTemplatesDir(), templatePath);
-    return await fs.readFile(fullPath, 'utf-8');
+    return await fs.readFile(fullPath, "utf-8");
   }
 
   /**
