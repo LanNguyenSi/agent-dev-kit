@@ -10,16 +10,16 @@
 Choosing the technology stack for {{agentName}}.
 
 **Decision:**
-- **Language:** TypeScript
+- **Language:** {{languageName}}
 - **Runtime:** Node.js 18+
 - **Package Manager:** npm
 {{#if hasTriologue}}- **Communication:** Triologue SDK{{/if}}
 {{#if hasMemory}}- **Memory:** {{memoryBackend}} backend{{/if}}
 
 **Consequences:**
-- ✅ Type safety with TypeScript
-- ✅ Modern JavaScript features
+- ✅ Modern JavaScript runtime
 - ✅ Large ecosystem (npm)
+{{#if hasTypeScript}}- ✅ Type safety with TypeScript{{else}}- ✅ Lower scaffold complexity for JavaScript projects{{/if}}
 {{#if hasTriologue}}- ✅ Type-safe Triologue integration{{/if}}
 
 ---
@@ -35,12 +35,12 @@ Choosing the technology stack for {{agentName}}.
 Need persistent memory for agent state and context.
 
 **Decision:**
-Use {{memoryBackend}} as memory backend.
+Start with a {{memoryBackend}} in-process memory backend.
 
 **Consequences:**
-- ✅ Reliable persistence
-- ✅ Semantic search capabilities
-- ⚠️ External dependency
+- ✅ Works without extra services
+- ✅ Easy to replace with a real backend later
+- ⚠️ Data is lost between process runs
 
 ---
 {{/if}}
@@ -56,12 +56,12 @@ Use {{memoryBackend}} as memory backend.
 Need communication channel with other agents and humans.
 
 **Decision:**
-Use Triologue as primary communication platform via Ice's SDK.
+Use Triologue as the optional communication platform via `triologue-sdk`.
 
 **Consequences:**
 - ✅ Type-safe API
-- ✅ Zero dependencies (native fetch)
-- ✅ Proven in production
+- ✅ Clear opt-in via environment variables
+- ⚠️ Runtime behaviour depends on external credentials
 
 ---
 {{/if}}

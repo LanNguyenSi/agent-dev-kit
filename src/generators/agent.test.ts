@@ -49,6 +49,13 @@ describe("AgentGenerator", () => {
     await expectFile(path.join(targetDir, "README.md"));
     await expectFile(path.join(targetDir, "tsconfig.json"));
     await expectFile(path.join(targetDir, "src", "index.ts"));
+    await expectFile(path.join(targetDir, "src", "index.test.ts"));
+    await expectFile(path.join(targetDir, "src", "memory", "index.ts"));
+    await expectFile(path.join(targetDir, "src", "skills", "loader.ts"));
+    await expectFile(path.join(targetDir, "src", "skills", "example.ts"));
+    await expectFile(
+      path.join(targetDir, "src", "skills", "example", "SKILL.md"),
+    );
 
     const packageJson = JSON.parse(
       await readFile(path.join(targetDir, "package.json"), "utf8"),
@@ -59,10 +66,16 @@ describe("AgentGenerator", () => {
     };
 
     expect(packageJson.scripts.build).toBe("tsc");
+    expect(packageJson.scripts.dev).toBe(
+      "node --import tsx --watch src/index.ts",
+    );
     expect(packageJson.scripts.start).toBe("node dist/index.js");
+    expect(packageJson.scripts.test).toBe("vitest run");
     expect(packageJson.dependencies.dotenv).toBe("^16.4.0");
     expect(packageJson.dependencies["triologue-sdk"]).toBe("^0.1.0");
+    expect(packageJson.devDependencies.tsx).toBe("^4.19.3");
     expect(packageJson.devDependencies.typescript).toBe("^5.3.3");
+    expect(packageJson.devDependencies.vitest).toBe("^3.2.4");
 
     const envExample = await readFile(
       path.join(targetDir, ".env.example"),
@@ -71,6 +84,7 @@ describe("AgentGenerator", () => {
     expect(envExample).toContain("AGENT_NAME=release-helper");
     expect(envExample).toContain("BYOA_TOKEN=your-token-here");
     expect(envExample).toContain("MEMORY_BACKEND=local");
+    expect(envExample).not.toContain("MEMORY_API_KEY");
 
     const mainFile = await readFile(
       path.join(targetDir, "src", "index.ts"),
@@ -79,8 +93,29 @@ describe("AgentGenerator", () => {
     expect(mainFile).toContain("import { config } from 'dotenv';");
     expect(mainFile).toContain("import { Triologue } from 'triologue-sdk';");
     expect(mainFile).toContain(
+      "import { createMemoryStore } from './memory/index.js';",
+    );
+    expect(mainFile).toContain(
+      "import { loadSkills, type Skill } from './skills/loader.js';",
+    );
+    expect(mainFile).toContain(
       "this.name = process.env.AGENT_NAME || 'release-helper';",
     );
+    expect(mainFile).toContain("const isMainModule = process.argv[1]");
+
+    const architectureDoc = await readFile(
+      path.join(targetDir, ".ai", "ARCHITECTURE.md"),
+      "utf8",
+    );
+    expect(architectureDoc).toContain("src/index.ts");
+    expect(architectureDoc).toContain("src/index.test.ts");
+    expect(architectureDoc).not.toContain("src/agent.ts");
+    expect(architectureDoc).not.toContain("src/config.ts");
+
+    const readme = await readFile(path.join(targetDir, "README.md"), "utf8");
+    expect(readme).toContain("src/memory/index.ts");
+    expect(readme).toContain("src/skills/loader.ts");
+    expect(readme).toContain("npm test");
   });
 
   it("generates a JavaScript agent without TypeScript-only files", async () => {
@@ -108,6 +143,7 @@ describe("AgentGenerator", () => {
     await generator.generate();
 
     await expectFile(path.join(targetDir, "src", "index.js"));
+    await expectFile(path.join(targetDir, "src", "index.test.js"));
 
     const packageJson = JSON.parse(
       await readFile(path.join(targetDir, "package.json"), "utf8"),
@@ -118,15 +154,32 @@ describe("AgentGenerator", () => {
     };
 
     expect(packageJson.main).toBe("src/index.js");
+    expect(packageJson.scripts.dev).toBe("node --watch src/index.js");
     expect(packageJson.scripts.start).toBe("node src/index.js");
+    expect(packageJson.scripts.test).toBe("vitest run");
     expect(packageJson.scripts).not.toHaveProperty("build");
-    expect(packageJson.devDependencies).toEqual({});
+    expect(packageJson.devDependencies).toEqual({
+      vitest: "^3.2.4",
+    });
 
     const gitignore = await readFile(
       path.join(targetDir, ".gitignore"),
       "utf8",
     );
     expect(gitignore).not.toContain("dist/");
+
+    const decisionsDoc = await readFile(
+      path.join(targetDir, ".ai", "DECISIONS.md"),
+      "utf8",
+    );
+    expect(decisionsDoc).toContain("Language:** JavaScript");
+
+    const architectureDoc = await readFile(
+      path.join(targetDir, ".ai", "ARCHITECTURE.md"),
+      "utf8",
+    );
+    expect(architectureDoc).toContain("src/index.js");
+    expect(architectureDoc).toContain("src/index.test.js");
 
     await expectMissing(path.join(targetDir, "tsconfig.json"));
   });

@@ -4,6 +4,10 @@ Backlog fuer die naechsten sinnvollen Arbeiten an `agent-dev-kit`.
 
 ## Offen
 
+- Aktuell keine offenen Backlog-Tasks in diesem Ordner.
+
+## Erledigt
+
 - [001-implement-memory-scaffold.md](./001-implement-memory-scaffold.md)
 - [002-implement-skills-scaffold.md](./002-implement-skills-scaffold.md)
 - [003-green-default-generated-projects.md](./003-green-default-generated-projects.md)
@@ -13,9 +17,9 @@ Backlog fuer die naechsten sinnvollen Arbeiten an `agent-dev-kit`.
 
 ## Kontext
 
-Die Tasks basieren auf der aktuellen Review des Projekts:
-- `memory` und `skills` sind im Generator noch nicht als echte Scaffold-Features umgesetzt
-- generierte Projekte starten nicht mit einem gruenden Test-Setup
-- README und `.ai`-Templates versprechen mehr Struktur als aktuell erzeugt wird
-- Git-Initialisierung ist auf frischen Maschinen fehleranfaellig
-- Feature-Parsing ist aktuell zu permissiv
+Die Aufgaben in diesem Ordner wurden als zusammenhaengende Generator-Ueberarbeitung umgesetzt:
+- `memory` und `skills` erzeugen jetzt echten Scaffold-Output
+- generierte Projekte starten mit gruenden Testdefaults
+- README und `.ai`-Templates spiegeln den realen Output wider
+- Git-Initialisierung faengt fehlende Identity sauber ab
+- Feature-Parsing ist jetzt strikt validiert

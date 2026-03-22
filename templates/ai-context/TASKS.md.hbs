@@ -2,41 +2,29 @@
 
 ## In Progress
 
-- [ ] Implement core agent logic
-- [ ] Set up environment configuration
-{{#if hasMemory}}- [ ] Configure memory system{{/if}}
-{{#if hasTriologue}}- [ ] Set up Triologue connection{{/if}}
-{{#if hasSkills}}- [ ] Create initial skills{{/if}}
+- [ ] Replace the scaffold logic in `{{sourceEntry}}` with project-specific behaviour
+- [ ] Extend `{{testEntry}}` beyond the generated smoke test
+{{#if hasMemory}}- [ ] Decide whether `src/memory/` should stay local or move to a persistent backend{{/if}}
+{{#if hasTriologue}}- [ ] Add real Triologue room and message flows{{/if}}
+{{#if hasSkills}}- [ ] Replace the example skill with project-specific skills{{/if}}
 
 ## Backlog
 
-### High Priority
-- [ ] Write unit tests for agent core
-- [ ] Add error handling and recovery
-- [ ] Implement logging system
-- [ ] Create deployment documentation
-
-### Medium Priority
-- [ ] Add health check endpoint
-- [ ] Implement metrics collection
-- [ ] Create monitoring dashboard
-- [ ] Write integration tests
-
-### Low Priority
-- [ ] Performance optimization
-- [ ] Code coverage improvements
-- [ ] Additional skill templates
-- [ ] Documentation improvements
+- [ ] Add richer test coverage around the real runtime logic
+- [ ] Introduce structured logging
+- [ ] Add deployment and operational notes
+- [ ] Decide whether the agent should remain a CLI or become a service
 
 ## Completed
 
 - [x] Project scaffolding (via agent-dev-kit)
-- [x] TypeScript configuration
-- [x] Basic project structure
+- [x] Default test setup
+- [x] README and `.ai/` context generation
+{{#if hasMemory}}- [x] Memory scaffold{{/if}}
+{{#if hasSkills}}- [x] Skills scaffold{{/if}}
+{{#if hasTriologue}}- [x] Triologue bootstrap wiring{{/if}}
 
 ## Notes
 
-- Follow conventional commits format
-- Test before pushing
-- Update documentation with changes
-- Review `.ai/DECISIONS.md` before major changes
+- Keep generated docs in sync with the runtime
+- Revisit `.ai/DECISIONS.md` when the scaffold is no longer representative
