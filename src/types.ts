@@ -1,11 +1,13 @@
+export interface AgentFeatures {
+  memory: boolean;
+  triologue: boolean;
+  skills: boolean;
+}
+
 export interface AgentConfig {
   name: string;
   description: string;
-  features: {
-    memory: boolean;
-    triologue: boolean;
-    skills: boolean;
-  };
+  features: AgentFeatures;
   options: {
     typescript: boolean;
     git: boolean;
@@ -21,10 +23,14 @@ export interface AgentConfig {
 export interface TemplateContext {
   agentName: string;
   agentRole: string;
+  capabilities: string;
   hasMemory: boolean;
   hasTriologue: boolean;
   hasSkills: boolean;
   hasTypeScript: boolean;
+  languageName: string;
+  sourceEntry: string;
+  testEntry: string;
   memoryBackend: string;
   triologueRoom?: string;
   date: string;

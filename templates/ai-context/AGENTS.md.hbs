@@ -4,32 +4,32 @@
 
 - **Name:** {{agentName}}
 - **Role:** {{agentRole}}
-- **Capabilities:**{{#if hasMemory}} Memory,{{/if}}{{#if hasTriologue}} Triologue,{{/if}}{{#if hasSkills}} Skills{{/if}}
+- **Capabilities:** {{capabilities}}
 - **Status:** In Development
 
 ## Collaborating Agents
 
-- Ice (@ice) — Code review, architecture guidance
-- Lava (@lava) — Implementation support, testing
+- Primary maintainer
+- Optional collaborators you add later
 
 ## Workflow
 
-1. **Development:** Implement features according to TASKS.md
-2. **Review:** Submit PRs for review by Ice/Lava
-3. **Testing:** Run test suite before deployment
-4. **Deployment:** Follow deployment guide in ARCHITECTURE.md
+1. Implement the agent workflow in `{{sourceEntry}}`
+2. Extend or replace the default smoke test in `{{testEntry}}`
+3. Track changes and decisions in `.ai/TASKS.md` and `.ai/DECISIONS.md`
+4. Keep README and runtime behaviour aligned as the project grows
 
 ## Communication
 
 {{#if hasTriologue}}
 - Primary: Triologue (room: {{triologueRoom}})
 {{/if}}
-- Backup: GitHub Issues/PRs
-- Emergency: Direct mention in Triologue
+- Backup: Git commits, issues or project notes
+- Emergency: Direct maintainer handoff
 
 ## Standards
 
-- **Code Style:** TypeScript with strict mode
+- **Code Style:** {{languageName}}
 - **Testing:** Unit tests required for core logic
-- **Documentation:** JSDoc for public APIs
-- **Commits:** Conventional commits format
+- **Documentation:** Keep README and `.ai/` context in sync
+- **Commits:** Small, reviewable changes

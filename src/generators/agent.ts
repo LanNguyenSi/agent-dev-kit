@@ -22,16 +22,56 @@ export class AgentGenerator {
    * Generate template context from config
    */
   private getTemplateContext(): TemplateContext {
+    const sourceEntry = this.getSourceEntryPath();
+    const testEntry = this.getTestEntryPath();
+    const capabilities = ["Core runtime"];
+
+    if (this.config.features.memory) {
+      capabilities.push("Memory");
+    }
+
+    if (this.config.features.triologue) {
+      capabilities.push("Triologue");
+    }
+
+    if (this.config.features.skills) {
+      capabilities.push("Skills");
+    }
+
     return {
       agentName: this.config.name,
       agentRole: this.config.description || "AI Agent",
+      capabilities: capabilities.join(", "),
       hasMemory: this.config.features.memory,
       hasTriologue: this.config.features.triologue,
       hasSkills: this.config.features.skills,
       hasTypeScript: this.config.options.typescript,
+      languageName: this.config.options.typescript ? "TypeScript" : "JavaScript",
+      sourceEntry,
+      testEntry,
       memoryBackend: "local",
       date: new Date().toISOString().split("T")[0],
     };
+  }
+
+  private getExtension(): "ts" | "js" {
+    return this.config.options.typescript ? "ts" : "js";
+  }
+
+  private getSourceEntryPath(): string {
+    return `src/index.${this.getExtension()}`;
+  }
+
+  private getTestEntryPath(): string {
+    return `src/index.test.${this.getExtension()}`;
+  }
+
+  private getSkillLoaderPath(): string {
+    return `src/skills/loader.${this.getExtension()}`;
+  }
+
+  private getMemoryModulePath(): string {
+    return `src/memory/index.${this.getExtension()}`;
   }
 
   /**
@@ -84,27 +124,12 @@ export class AgentGenerator {
       description: this.config.description || "AI Agent",
       main: this.config.options.typescript ? "dist/index.js" : "src/index.js",
       type: "module",
-      scripts: this.config.options.typescript
-        ? {
-            build: "tsc",
-            dev: "tsc --watch",
-            start: "node dist/index.js",
-            test: 'echo \"Error: no test specified\" && exit 1',
-          }
-        : {
-            start: "node src/index.js",
-            test: 'echo \"Error: no test specified\" && exit 1',
-          },
+      scripts: this.getScripts(),
       keywords: ["ai", "agent"],
       author: this.config.metadata?.author || "",
       license: this.config.metadata?.license || "MIT",
       dependencies: this.getDependencies(),
-      devDependencies: this.config.options.typescript
-        ? {
-            "@types/node": "^20.11.0",
-            typescript: "^5.3.3",
-          }
-        : {},
+      devDependencies: this.getDevDependencies(),
     };
 
     await FileUtils.writeFile(
@@ -112,6 +137,38 @@ export class AgentGenerator {
       JSON.stringify(packageJson, null, 2),
     );
     this.log("  ✓ package.json");
+  }
+
+  private getScripts(): Record<string, string> {
+    if (this.config.options.typescript) {
+      return {
+        build: "tsc",
+        dev: "node --import tsx --watch src/index.ts",
+        start: "node dist/index.js",
+        test: "vitest run",
+      };
+    }
+
+    return {
+      dev: "node --watch src/index.js",
+      start: "node src/index.js",
+      test: "vitest run",
+    };
+  }
+
+  private getDevDependencies(): Record<string, string> {
+    if (this.config.options.typescript) {
+      return {
+        "@types/node": "^20.11.0",
+        tsx: "^4.19.3",
+        typescript: "^5.3.3",
+        vitest: "^3.2.4",
+      };
+    }
+
+    return {
+      vitest: "^3.2.4",
+    };
   }
 
   /**
@@ -199,7 +256,6 @@ TRIOLOGUE_URL=https://opentriologue.ai
     if (this.config.features.memory) {
       content += `\n# Memory
 MEMORY_BACKEND=local
-MEMORY_API_KEY=your-key-here
 `;
     }
 
@@ -216,44 +272,87 @@ MEMORY_API_KEY=your-key-here
   private async generateReadme(): Promise<void> {
     this.log("Generating README.md...");
 
+    const sourceEntry = this.getSourceEntryPath();
+    const testEntry = this.getTestEntryPath();
+    const memoryPath = this.getMemoryModulePath();
+    const skillLoaderPath = this.getSkillLoaderPath();
+
+    const features = [
+      "- Core runtime scaffold",
+      this.config.features.memory
+        ? `- Local memory scaffold in \`${memoryPath}\``
+        : null,
+      this.config.features.triologue
+        ? `- Triologue client wiring in \`${sourceEntry}\``
+        : null,
+      this.config.features.skills
+        ? `- Skills loader and example skill in \`${skillLoaderPath}\``
+        : null,
+    ]
+      .filter((value): value is string => value !== null)
+      .join("\n");
+
+    const generatedFiles = [
+      `- \`${sourceEntry}\` - main agent entrypoint`,
+      `- \`${testEntry}\` - smoke test for the generated agent`,
+      this.config.features.memory
+        ? `- \`${memoryPath}\` - local in-memory stub implementation`
+        : null,
+      this.config.features.skills
+        ? `- \`${skillLoaderPath}\` - example skills loader`
+        : null,
+      this.config.features.skills
+        ? `- \`src/skills/example/SKILL.md\` - skill prompt template`
+        : null,
+      "- `.ai/` - project context for humans and agents",
+    ]
+      .filter((value): value is string => value !== null)
+      .join("\n");
+
+    const setupStep = this.config.options.typescript
+      ? "4. Build and run:\n~~~bash\nnpm run build\nnpm start\n~~~"
+      : "4. Run the agent:\n~~~bash\nnpm start\n~~~";
+
     const content = `# ${this.config.name}
 
 ${this.config.description || "AI Agent"}
 
 ## Features
 
-${this.config.features.memory ? "- 🧠 Memory System\n" : ""}${this.config.features.triologue ? "- 📡 Triologue Integration\n" : ""}${this.config.features.skills ? "- 🎯 Skills Framework\n" : ""}
+${features}
+
+## Generated Files
+
+${generatedFiles}
+
 ## Setup
 
 1. Install dependencies:
-\`\`\`bash
+~~~bash
 npm install
-\`\`\`
+~~~
 
 2. Configure environment:
-\`\`\`bash
+~~~bash
 cp .env.example .env
-# Edit .env with your configuration
-\`\`\`
+~~~
 
-3. ${this.config.options.typescript ? "Build and run" : "Run"}:
-\`\`\`bash
-${this.config.options.typescript ? "npm run build\n" : ""}npm start
-\`\`\`
+3. Run the default test suite:
+~~~bash
+npm test
+~~~
+
+${setupStep}
 
 ## Development
 
-${
-  this.config.options.typescript
-    ? `\`\`\`bash
-npm run dev  # Watch mode
-\`\`\`
-`
-    : ""
-}
-## Documentation
+~~~bash
+npm run dev
+~~~
 
-See [\`.ai/ARCHITECTURE.md\`](.ai/ARCHITECTURE.md) for system overview.
+## Notes
+
+${this.config.features.memory ? "- The memory scaffold uses a local in-process store so the project works without extra services.\n" : ""}${this.config.features.skills ? "- The bundled example skill is intended as a starting point for your own SKILL.md-based workflows.\n" : ""}${this.config.features.triologue ? "- Set `BYOA_TOKEN` in `.env` before enabling live Triologue calls.\n" : ""}See [\`.ai/ARCHITECTURE.md\`](.ai/ARCHITECTURE.md) for the generated project overview.
 
 ## License
 
@@ -270,43 +369,330 @@ ${this.config.metadata?.license || "MIT"}
   private async generateMainFile(): Promise<void> {
     this.log("Generating main agent file...");
 
-    const ext = this.config.options.typescript ? "ts" : "js";
+    const ext = this.getExtension();
     const srcDir = path.join(this.targetDir, "src");
     await FileUtils.ensureDir(srcDir);
 
-    const content = `${this.config.options.typescript ? "import { config } from 'dotenv';\n" : "import dotenv from 'dotenv';\n"}${this.config.features.triologue ? "import { Triologue } from 'triologue-sdk';\n" : ""}
-${this.config.options.typescript ? "config();\n" : "dotenv.config();\n"}
-export class Agent {
-  private name: string;${this.config.features.triologue ? "\n  private triologue?: Triologue;" : ""}
+    const content = this.buildMainFileContent();
 
-  constructor() {
-    this.name = process.env.AGENT_NAME || '${this.config.name}';
-    ${
+    await FileUtils.writeFile(path.join(srcDir, `index.${ext}`), content);
+    this.log(`  ✓ src/index.${ext}`);
+  }
+
+  private buildMainFileContent(): string {
+    const isTypeScript = this.config.options.typescript;
+    const imports = [
+      isTypeScript
+        ? "import { config } from 'dotenv';"
+        : "import dotenv from 'dotenv';",
+      "import path from 'node:path';",
+      "import { fileURLToPath } from 'node:url';",
+    ];
+
+    if (this.config.features.memory) {
+      imports.push("import { createMemoryStore } from './memory/index.js';");
+    }
+
+    if (this.config.features.skills) {
+      imports.push(
+        "import { loadSkills" +
+          (isTypeScript ? ", type Skill" : "") +
+          " } from './skills/loader.js';",
+      );
+    }
+
+    if (this.config.features.triologue) {
+      imports.push("import { Triologue } from 'triologue-sdk';");
+    }
+
+    const classFields = isTypeScript
+      ? [
+          "  private name: string;",
+          this.config.features.memory
+            ? "  private memory = createMemoryStore();"
+            : "",
+          this.config.features.skills
+            ? "  private skills: Skill[] = loadSkills();"
+            : "",
+          this.config.features.triologue
+            ? "  private triologue?: Triologue;"
+            : "",
+        ]
+          .filter((line) => line !== "")
+          .join("\n")
+      : "";
+
+    const constructorLines = [
+      `    this.name = process.env.AGENT_NAME || '${this.config.name}';`,
+      !isTypeScript && this.config.features.memory
+        ? "    this.memory = createMemoryStore();"
+        : "",
+      !isTypeScript && this.config.features.skills
+        ? "    this.skills = loadSkills();"
+        : "",
       this.config.features.triologue
-        ? `
-    if (process.env.BYOA_TOKEN) {
+        ? `    if (process.env.BYOA_TOKEN) {
       this.triologue = new Triologue({
         baseUrl: process.env.TRIOLOGUE_URL || 'https://opentriologue.ai',
         token: process.env.BYOA_TOKEN,
       });
     }`
-        : ""
-    }
+        : "",
+    ]
+      .filter((line) => line !== "")
+      .join("\n");
+
+    const summaryFeatures = [
+      "'core runtime'",
+      this.config.features.memory ? "'memory'" : "",
+      this.config.features.triologue ? "'triologue'" : "",
+      this.config.features.skills ? "'skills'" : "",
+    ]
+      .filter((value) => value !== "")
+      .join(", ");
+
+    const runLines = [
+      "    console.log(this.getSummary());",
+      this.config.features.memory
+        ? `    await this.memory.remember({
+      content: 'Agent boot sequence completed',
+      tags: ['system'],
+    });`
+        : "",
+      this.config.features.skills
+        ? `    if (this.skills.length > 0) {
+      const preview = await this.skills[0].run('boot');
+      console.log(\`Loaded \${this.skills.length} skill(s). Example output: \${preview}\`);
+    }`
+        : "",
+      this.config.features.triologue
+        ? `    if (this.triologue) {
+      console.log('Triologue client configured.');
+    }`
+        : "",
+      "    console.log('Implement your agent workflow here.');",
+    ]
+      .filter((line) => line !== "")
+      .join("\n");
+
+    return `${imports.join("\n")}
+
+${isTypeScript ? "config();" : "dotenv.config();"}
+
+export class Agent {
+${classFields !== "" ? `${classFields}\n` : ""}
+
+  constructor() {
+${constructorLines}
   }
 
-  async run() {
-    console.log(\`\${this.name} starting...\`);
-    // Your agent logic here
+  ${isTypeScript ? "getSummary(): string" : "getSummary()"} {
+    const enabledFeatures = [${summaryFeatures}];
+    return \`\${this.name} ready with \${enabledFeatures.join(', ')}.\`;
+  }
+
+  ${isTypeScript ? "async run(): Promise<void>" : "async run()"} {
+${runLines}
   }
 }
 
-// Main
-const agent = new Agent();
-agent.run().catch(console.error);
+const isMainModule = process.argv[1]
+  ? path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  : false;
+
+if (isMainModule) {
+  const agent = new Agent();
+  agent.run().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
+`;
+  }
+
+  private async generateMemoryScaffold(): Promise<void> {
+    if (!this.config.features.memory) {
+      return;
+    }
+
+    this.log("Generating memory scaffold...");
+
+    const ext = this.getExtension();
+    const memoryDir = path.join(this.targetDir, "src", "memory");
+    const content = this.config.options.typescript
+      ? `export interface MemoryEntry {
+  id: string;
+  content: string;
+  tags: string[];
+  createdAt: string;
+}
+
+export interface MemoryStore {
+  remember(input: { content: string; tags?: string[] }): Promise<MemoryEntry>;
+  recall(tag?: string): Promise<MemoryEntry[]>;
+}
+
+export class LocalMemoryStore implements MemoryStore {
+  private entries: MemoryEntry[] = [];
+
+  async remember(input: { content: string; tags?: string[] }): Promise<MemoryEntry> {
+    const entry: MemoryEntry = {
+      id: \`memory-\${this.entries.length + 1}\`,
+      content: input.content,
+      tags: input.tags ?? [],
+      createdAt: new Date().toISOString(),
+    };
+
+    this.entries.push(entry);
+    return entry;
+  }
+
+  async recall(tag?: string): Promise<MemoryEntry[]> {
+    if (!tag) {
+      return [...this.entries];
+    }
+
+    return this.entries.filter((entry) => entry.tags.includes(tag));
+  }
+}
+
+export function createMemoryStore(): MemoryStore {
+  return new LocalMemoryStore();
+}
+`
+      : `export class LocalMemoryStore {
+  constructor() {
+    this.entries = [];
+  }
+
+  async remember(input) {
+    const entry = {
+      id: \`memory-\${this.entries.length + 1}\`,
+      content: input.content,
+      tags: input.tags ?? [],
+      createdAt: new Date().toISOString(),
+    };
+
+    this.entries.push(entry);
+    return entry;
+  }
+
+  async recall(tag) {
+    if (!tag) {
+      return [...this.entries];
+    }
+
+    return this.entries.filter((entry) => entry.tags.includes(tag));
+  }
+}
+
+export function createMemoryStore() {
+  return new LocalMemoryStore();
+}
 `;
 
-    await FileUtils.writeFile(path.join(srcDir, `index.${ext}`), content);
-    this.log(`  ✓ src/index.${ext}`);
+    await FileUtils.writeFile(path.join(memoryDir, `index.${ext}`), content);
+    this.log(`  ✓ src/memory/index.${ext}`);
+  }
+
+  private async generateSkillsScaffold(): Promise<void> {
+    if (!this.config.features.skills) {
+      return;
+    }
+
+    this.log("Generating skills scaffold...");
+
+    const ext = this.getExtension();
+    const skillsDir = path.join(this.targetDir, "src", "skills");
+    const loaderContent = this.config.options.typescript
+      ? `export interface Skill {
+  name: string;
+  description: string;
+  run(input: string): Promise<string>;
+}
+
+import { exampleSkill } from "./example.js";
+
+export function loadSkills(): Skill[] {
+  return [exampleSkill];
+}
+`
+      : `import { exampleSkill } from "./example.js";
+
+export function loadSkills() {
+  return [exampleSkill];
+}
+`;
+    const exampleContent = this.config.options.typescript
+      ? `import type { Skill } from "./loader.js";
+
+export const exampleSkill: Skill = {
+  name: "summarize-context",
+  description: "A minimal example skill that transforms a short input string.",
+  async run(input: string): Promise<string> {
+    return \`Example skill received: \${input}\`;
+  },
+};
+`
+      : `export const exampleSkill = {
+  name: "summarize-context",
+  description: "A minimal example skill that transforms a short input string.",
+  async run(input) {
+    return \`Example skill received: \${input}\`;
+  },
+};
+`;
+    const skillMarkdown = `# Example Skill
+
+## Name
+
+summarize-context
+
+## Purpose
+
+Demonstrates how a skill can describe its input, output and expected behaviour.
+
+## Input
+
+- A short string that represents the current context.
+
+## Output
+
+- A short confirmation string that can be used in tests or smoke runs.
+`;
+
+    await FileUtils.writeFile(path.join(skillsDir, `loader.${ext}`), loaderContent);
+    await FileUtils.writeFile(path.join(skillsDir, `example.${ext}`), exampleContent);
+    await FileUtils.writeFile(
+      path.join(skillsDir, "example", "SKILL.md"),
+      skillMarkdown,
+    );
+    this.log(`  ✓ src/skills/loader.${ext}`);
+    this.log(`  ✓ src/skills/example.${ext}`);
+    this.log("  ✓ src/skills/example/SKILL.md");
+  }
+
+  private async generateTestFile(): Promise<void> {
+    this.log("Generating test file...");
+
+    const ext = this.getExtension();
+    const testContent = `import { describe, expect, it } from "vitest";
+import { Agent } from "./index.js";
+
+describe("Agent", () => {
+  it("exposes the generated agent name in its summary", () => {
+    const agent = new Agent();
+
+    expect(agent.getSummary()).toContain("${this.config.name}");
+  });
+});
+`;
+
+    await FileUtils.writeFile(
+      path.join(this.targetDir, "src", `index.test.${ext}`),
+      testContent,
+    );
+    this.log(`  ✓ src/index.test.${ext}`);
   }
 
   /**
@@ -321,7 +707,10 @@ agent.run().catch(console.error);
     await this.generateGitignore();
     await this.generateEnvExample();
     await this.generateReadme();
+    await this.generateMemoryScaffold();
+    await this.generateSkillsScaffold();
     await this.generateMainFile();
+    await this.generateTestFile();
 
     console.log(`\n✅ Agent generated successfully at: ${this.targetDir}\n`);
   }
