@@ -53,7 +53,9 @@ describe("AgentGenerator", () => {
     await expectFile(path.join(targetDir, "src", "memory", "index.ts"));
     await expectFile(path.join(targetDir, "src", "skills", "loader.ts"));
     await expectFile(path.join(targetDir, "src", "skills", "example.ts"));
-    await expectFile(path.join(targetDir, "src", "skills", "example", "SKILL.md"));
+    await expectFile(
+      path.join(targetDir, "src", "skills", "example", "SKILL.md"),
+    );
 
     const packageJson = JSON.parse(
       await readFile(path.join(targetDir, "package.json"), "utf8"),
@@ -64,7 +66,9 @@ describe("AgentGenerator", () => {
     };
 
     expect(packageJson.scripts.build).toBe("tsc");
-    expect(packageJson.scripts.dev).toBe("node --import tsx --watch src/index.ts");
+    expect(packageJson.scripts.dev).toBe(
+      "node --import tsx --watch src/index.ts",
+    );
     expect(packageJson.scripts.start).toBe("node dist/index.js");
     expect(packageJson.scripts.test).toBe("vitest run");
     expect(packageJson.dependencies.dotenv).toBe("^16.4.0");
@@ -88,8 +92,12 @@ describe("AgentGenerator", () => {
     );
     expect(mainFile).toContain("import { config } from 'dotenv';");
     expect(mainFile).toContain("import { Triologue } from 'triologue-sdk';");
-    expect(mainFile).toContain("import { createMemoryStore } from './memory/index.js';");
-    expect(mainFile).toContain("import { loadSkills, type Skill } from './skills/loader.js';");
+    expect(mainFile).toContain(
+      "import { createMemoryStore } from './memory/index.js';",
+    );
+    expect(mainFile).toContain(
+      "import { loadSkills, type Skill } from './skills/loader.js';",
+    );
     expect(mainFile).toContain(
       "this.name = process.env.AGENT_NAME || 'release-helper';",
     );

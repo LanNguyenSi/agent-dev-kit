@@ -105,14 +105,18 @@ program
         if (gitResult.committed) {
           console.log(chalk.green("✓ Git initialized with initial commit"));
         } else {
-          console.log(chalk.yellow("⚠ Git initialized, initial commit skipped"));
+          console.log(
+            chalk.yellow("⚠ Git initialized, initial commit skipped"),
+          );
           console.log(
             chalk.gray(
               "  Missing git identity. Configure it and create the first commit manually:",
             ),
           );
           if (gitResult.missingIdentity.includes("user.name")) {
-            console.log(chalk.cyan('  git config --global user.name "Your Name"'));
+            console.log(
+              chalk.cyan('  git config --global user.name "Your Name"'),
+            );
           }
           if (gitResult.missingIdentity.includes("user.email")) {
             console.log(

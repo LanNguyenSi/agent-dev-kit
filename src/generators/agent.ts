@@ -46,7 +46,9 @@ export class AgentGenerator {
       hasTriologue: this.config.features.triologue,
       hasSkills: this.config.features.skills,
       hasTypeScript: this.config.options.typescript,
-      languageName: this.config.options.typescript ? "TypeScript" : "JavaScript",
+      languageName: this.config.options.typescript
+        ? "TypeScript"
+        : "JavaScript",
       sourceEntry,
       testEntry,
       memoryBackend: "local",
@@ -661,8 +663,14 @@ Demonstrates how a skill can describe its input, output and expected behaviour.
 - A short confirmation string that can be used in tests or smoke runs.
 `;
 
-    await FileUtils.writeFile(path.join(skillsDir, `loader.${ext}`), loaderContent);
-    await FileUtils.writeFile(path.join(skillsDir, `example.${ext}`), exampleContent);
+    await FileUtils.writeFile(
+      path.join(skillsDir, `loader.${ext}`),
+      loaderContent,
+    );
+    await FileUtils.writeFile(
+      path.join(skillsDir, `example.${ext}`),
+      exampleContent,
+    );
     await FileUtils.writeFile(
       path.join(skillsDir, "example", "SKILL.md"),
       skillMarkdown,
