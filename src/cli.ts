@@ -7,6 +7,8 @@ import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { AgentGenerator } from "./generators/agent.js";
+import { addFeatureToProject } from "./generators/feature.js";
+import { generateSkill } from "./generators/skill.js";
 import { parseFeatureFlags } from "./features.js";
 import { FileUtils } from "./utils/files.js";
 import { initializeGitRepository } from "./utils/git.js";
@@ -162,19 +164,80 @@ program
 program
   .command("add-feature <feature>")
   .description("Add a feature to existing agent")
-  .action((feature: string) => {
-    console.log(chalk.yellow("\n⚠️  add-feature not yet implemented\n"));
-    console.log(
-      chalk.gray("Coming soon: agent-dev add-feature memory|triologue|skills"),
-    );
+  .action(async (feature: string) => {
+    try {
+      const result = await addFeatureToProject({
+        projectDir: process.cwd(),
+        feature,
+      });
+
+      if (result.alreadyPresent) {
+        console.log(
+          chalk.yellow(`\n⚠ Feature "${result.feature}" is already present.\n`),
+        );
+        return;
+      }
+
+      console.log(chalk.green(`\n✓ Added feature "${result.feature}"`));
+      if (result.createdFiles.length > 0) {
+        console.log(chalk.gray("  Created files:"));
+        for (const filePath of result.createdFiles) {
+          console.log(chalk.gray(`  - ${path.relative(process.cwd(), filePath)}`));
+        }
+      }
+
+      if (result.updatedFiles.length > 0) {
+        console.log(chalk.gray("  Updated files:"));
+        for (const filePath of result.updatedFiles) {
+          console.log(chalk.gray(`  - ${path.relative(process.cwd(), filePath)}`));
+        }
+      }
+      console.log();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      console.error(chalk.red("\n❌ Error adding feature:"), message);
+      process.exit(1);
+    }
   });
 
 program
   .command("generate-skill <name>")
   .description("Generate a new skill template")
-  .action((name: string) => {
-    console.log(chalk.yellow("\n⚠️  generate-skill not yet implemented\n"));
-    console.log(chalk.gray(`Coming soon: agent-dev generate-skill ${name}`));
+  .option("-d, --description <description>", "Skill description")
+  .action(async (name: string, options: { description?: string }) => {
+    try {
+      const result = await generateSkill({
+        projectDir: process.cwd(),
+        rawName: name,
+        description: options.description,
+      });
+
+      const status = [
+        result.createdSkillFile
+          ? `Created ${path.relative(process.cwd(), result.skillPath)}`
+          : `Kept existing ${path.relative(process.cwd(), result.skillPath)}`,
+        result.createdMarkdownFile
+          ? `Created ${path.relative(process.cwd(), result.markdownPath)}`
+          : `Kept existing ${path.relative(process.cwd(), result.markdownPath)}`,
+      ];
+
+      console.log(chalk.green("\n✓ Skill scaffold is ready"));
+      for (const line of status) {
+        console.log(chalk.gray(`  - ${line}`));
+      }
+      console.log(
+        chalk.gray(
+          `  - Updated ${path.relative(process.cwd(), result.loaderPath)}`,
+        ),
+      );
+      console.log();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      console.error(chalk.red("\n❌ Error generating skill:"), message);
+      process.exit(1);
+    }
   });
 
 await program.parseAsync();
