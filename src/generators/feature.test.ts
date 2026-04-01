@@ -41,13 +41,18 @@ describe("addFeatureToProject", () => {
     expect(result.feature).toBe("memory");
     expect(result.alreadyPresent).toBe(false);
 
-    const indexContent = await readFile(path.join(projectDir, "src/index.ts"), "utf8");
+    const indexContent = await readFile(
+      path.join(projectDir, "src/index.ts"),
+      "utf8",
+    );
     expect(indexContent).toContain(
       "import { createMemoryStore } from './memory/index.js';",
     );
     expect(indexContent).toContain("private memory = createMemoryStore();");
     expect(indexContent).toContain("await this.memory.remember({");
-    expect(indexContent).toContain("const enabledFeatures = ['core runtime', 'memory'];");
+    expect(indexContent).toContain(
+      "const enabledFeatures = ['core runtime', 'memory'];",
+    );
 
     const memoryModule = await readFile(
       path.join(projectDir, "src/memory/index.ts"),
@@ -55,7 +60,10 @@ describe("addFeatureToProject", () => {
     );
     expect(memoryModule).toContain("export interface MemoryStore");
 
-    const envExample = await readFile(path.join(projectDir, ".env.example"), "utf8");
+    const envExample = await readFile(
+      path.join(projectDir, ".env.example"),
+      "utf8",
+    );
     expect(envExample).toContain("MEMORY_BACKEND=local");
   });
 
@@ -83,8 +91,13 @@ describe("addFeatureToProject", () => {
     expect(result.feature).toBe("triologue");
     expect(result.alreadyPresent).toBe(false);
 
-    const indexContent = await readFile(path.join(projectDir, "src/index.js"), "utf8");
-    expect(indexContent).toContain("import { Triologue } from 'triologue-sdk';");
+    const indexContent = await readFile(
+      path.join(projectDir, "src/index.js"),
+      "utf8",
+    );
+    expect(indexContent).toContain(
+      "import { Triologue } from 'triologue-sdk';",
+    );
     expect(indexContent).toContain("triologue;");
     expect(indexContent).toContain("this.triologue = new Triologue({");
     expect(indexContent).toContain(
@@ -96,7 +109,10 @@ describe("addFeatureToProject", () => {
     ) as { dependencies: Record<string, string> };
     expect(packageJson.dependencies["triologue-sdk"]).toBe("^0.1.0");
 
-    const envExample = await readFile(path.join(projectDir, ".env.example"), "utf8");
+    const envExample = await readFile(
+      path.join(projectDir, ".env.example"),
+      "utf8",
+    );
     expect(envExample).toContain("BYOA_TOKEN=your-token-here");
     expect(envExample).toContain("TRIOLOGUE_URL=https://opentriologue.ai");
   });
@@ -137,7 +153,9 @@ async function createGeneratedProject(
     description: string;
   },
 ): Promise<string> {
-  const targetDir = await mkdtemp(path.join(os.tmpdir(), "agent-dev-kit-feature-test-"));
+  const targetDir = await mkdtemp(
+    path.join(os.tmpdir(), "agent-dev-kit-feature-test-"),
+  );
   tempDirs.push(targetDir);
 
   const config: AgentConfig = {

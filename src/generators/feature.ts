@@ -55,11 +55,17 @@ function ensureImport(content: string, importLine: string): string {
   const lastImport = imports[imports.length - 1];
   const insertIndex = (lastImport.index ?? 0) + lastImport[0].length;
   return (
-    content.slice(0, insertIndex) + `\n${importLine}` + content.slice(insertIndex)
+    content.slice(0, insertIndex) +
+    `\n${importLine}` +
+    content.slice(insertIndex)
   );
 }
 
-function ensureClassField(content: string, anchor: string, fieldLine: string): string {
+function ensureClassField(
+  content: string,
+  anchor: string,
+  fieldLine: string,
+): string {
   if (content.includes(fieldLine)) {
     return content;
   }
@@ -78,7 +84,8 @@ function ensureConstructorTriologue(content: string): string {
     return content;
   }
 
-  const assignmentPattern = /(\s*this\.name = process\.env\.AGENT_NAME \|\| '.*';)/;
+  const assignmentPattern =
+    /(\s*this\.name = process\.env\.AGENT_NAME \|\| '.*';)/;
   const match = content.match(assignmentPattern);
   if (!match) {
     throw new Error(
@@ -108,7 +115,10 @@ function ensureSummaryFeature(content: string, featureLabel: string): string {
     entries.push(featureLabel);
   }
 
-  return content.replace(match[0], `const enabledFeatures = [${entries.join(", ")}];`);
+  return content.replace(
+    match[0],
+    `const enabledFeatures = [${entries.join(", ")}];`,
+  );
 }
 
 function ensureRunSnippet(content: string, snippet: string): string {
@@ -130,7 +140,12 @@ async function ensureMemoryScaffold(
   projectDir: string,
   extension: "ts" | "js",
 ): Promise<string | null> {
-  const memoryPath = path.join(projectDir, "src", "memory", `index.${extension}`);
+  const memoryPath = path.join(
+    projectDir,
+    "src",
+    "memory",
+    `index.${extension}`,
+  );
   if (await fs.pathExists(memoryPath)) {
     return null;
   }
@@ -218,9 +233,25 @@ async function ensureSkillsScaffold(
   extension: "ts" | "js",
 ): Promise<string[]> {
   const created: string[] = [];
-  const loaderPath = path.join(projectDir, "src", "skills", `loader.${extension}`);
-  const examplePath = path.join(projectDir, "src", "skills", `example.${extension}`);
-  const markdownPath = path.join(projectDir, "src", "skills", "example", "SKILL.md");
+  const loaderPath = path.join(
+    projectDir,
+    "src",
+    "skills",
+    `loader.${extension}`,
+  );
+  const examplePath = path.join(
+    projectDir,
+    "src",
+    "skills",
+    `example.${extension}`,
+  );
+  const markdownPath = path.join(
+    projectDir,
+    "src",
+    "skills",
+    "example",
+    "SKILL.md",
+  );
 
   await fs.ensureDir(path.dirname(markdownPath));
 
@@ -302,7 +333,10 @@ Demonstrates how a skill can describe its input, output and expected behaviour.
   return created;
 }
 
-async function ensureEnvBlock(projectDir: string, lines: string[]): Promise<boolean> {
+async function ensureEnvBlock(
+  projectDir: string,
+  lines: string[],
+): Promise<boolean> {
   const envPath = path.join(projectDir, ".env.example");
   const existing = (await fs.pathExists(envPath))
     ? await fs.readFile(envPath, "utf8")
@@ -341,7 +375,11 @@ async function ensureTriologueDependency(projectDir: string): Promise<boolean> {
   }
 
   packageJson.dependencies["triologue-sdk"] = "^0.1.0";
-  await fs.writeFile(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`, "utf8");
+  await fs.writeFile(
+    packagePath,
+    `${JSON.stringify(packageJson, null, 2)}\n`,
+    "utf8",
+  );
   return true;
 }
 
@@ -362,7 +400,10 @@ export async function addFeatureToProject(
   const updatedFiles: string[] = [];
 
   if (feature === "memory") {
-    const createdMemory = await ensureMemoryScaffold(options.projectDir, extension);
+    const createdMemory = await ensureMemoryScaffold(
+      options.projectDir,
+      extension,
+    );
     if (createdMemory) {
       createdFiles.push(createdMemory);
     }

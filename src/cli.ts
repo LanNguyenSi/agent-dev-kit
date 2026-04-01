@@ -182,14 +182,18 @@ program
       if (result.createdFiles.length > 0) {
         console.log(chalk.gray("  Created files:"));
         for (const filePath of result.createdFiles) {
-          console.log(chalk.gray(`  - ${path.relative(process.cwd(), filePath)}`));
+          console.log(
+            chalk.gray(`  - ${path.relative(process.cwd(), filePath)}`),
+          );
         }
       }
 
       if (result.updatedFiles.length > 0) {
         console.log(chalk.gray("  Updated files:"));
         for (const filePath of result.updatedFiles) {
-          console.log(chalk.gray(`  - ${path.relative(process.cwd(), filePath)}`));
+          console.log(
+            chalk.gray(`  - ${path.relative(process.cwd(), filePath)}`),
+          );
         }
       }
       console.log();
