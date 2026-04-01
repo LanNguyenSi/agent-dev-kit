@@ -19,6 +19,15 @@ CLI scaffolding tool for AI agent projects with optional Memory, Triologue and S
 agent-dev create my-agent --features=memory,skills
 ```
 
+Weitere Commands:
+
+```bash
+agent-dev add-feature memory
+agent-dev add-feature triologue
+agent-dev add-feature skills
+agent-dev generate-skill release-notes --description "Generate release notes from changelog entries"
+```
+
 Available feature flags:
 
 - `memory`
